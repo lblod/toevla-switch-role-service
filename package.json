@@ -1,0 +1,22 @@
+{
+  "name": "toevla-switch-role-service",
+  "version": "0.0.1",
+  "description": "Service for switching roles in the toevla data entry application",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lblod/toevla-switch-role-service.git"
+  },
+  "keywords": [
+    "mu-service"
+  ],
+  "author": "Aad Versteden",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lblod/toevla-switch-role-service/issues"
+  },
+  "homepage": "https://github.com/lblod/toevla-switch-role-service#readme"
+}

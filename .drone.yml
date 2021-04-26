@@ -1,0 +1,61 @@
+---
+kind: pipeline
+type: docker
+name: verify-pr
+steps:
+- name: build-dry-run
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-switch-role
+    dry_run: true
+    purge: true
+trigger:
+  event:
+    - pull
+---
+kind: pipeline
+type: docker
+name: push-latest-build-on-commit-to-master
+steps:
+- name: push-latest-build
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-switch-role
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+trigger:
+  branch:
+    - master
+  event:
+    exclude:
+    - pull_request
+---
+kind: pipeline
+type: docker
+name: release-on-tag
+steps:
+- name: build-dry-run
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-switch-role
+    dry_run: true
+- name: push-tagged-build
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-switch-role
+    tags: ${DRONE_TAG##v}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    purge: true
+trigger:
+  event:
+    - tag
+---
+kind: signature
+hmac: 45e7a3cd0304240361b721afb04a94817285139535276db4dc90865da8b6e6b9
+
+...

@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/lblod/toevla-switch-role-service/issues"
   },
-  "homepage": "https://github.com/lblod/toevla-switch-role-service#readme"
+  "homepage": "https://github.com/lblod/toevla-switch-role-service#readme",
+  "dependencies": {
+    "@lblod/mu-auth-sudo": "^0.2.0"
+  }
 }

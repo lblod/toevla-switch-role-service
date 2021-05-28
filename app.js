@@ -2,9 +2,6 @@
 
 import { app, query, update, errorHandler, sparqlEscapeString, sparqlEscapeUri } from 'mu';
 
-app.get('/', function( req, res ) {
-  res.send('Hello mu-javascript-template');
-} );
 
 /**
  * POST /sessions/role

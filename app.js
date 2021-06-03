@@ -34,17 +34,18 @@ async function accountForSessionUri(sessionUri) {
  * }
  */
 app.post('/session/role', async function(req, res) {
-  // figure out the session id
-  const sessionUri = req.headers['mu-session-id'];
-  const roleId = req.body.data.id;
+  try {
+    // figure out the session id
+    const sessionUri = req.headers['mu-session-id'];
+    const roleId = req.body.data.id;
 
-  const accountUri = await accountForSessionUri(sessionUri);
-  const accountGraph = accountUri;
+    const accountUri = await accountForSessionUri(sessionUri);
+    const accountGraph = accountUri;
 
-  // update the current role
+    // update the current role
 
-  // remove the old
-  await update(`
+    // remove the old
+    await update(`
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     DELETE WHERE {
       GRAPH ${sparqlEscapeUri(accountGraph)} {
@@ -52,8 +53,8 @@ app.post('/session/role', async function(req, res) {
       }
     }`);
 
-  // insert the new (even if the old didn't exist)
-  await update(`
+    // insert the new (even if the old didn't exist)
+    await update(`
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
     INSERT {
@@ -67,17 +68,23 @@ app.post('/session/role', async function(req, res) {
       }
     }`);
 
-  // reset cache key headers
-  res.set('mu-auth-allowed-groups', 'CLEAR');
-  res.send(204);
+    // reset cache key headers
+    res.set('mu-auth-allowed-groups', 'CLEAR');
+    res.send(204);
+  } catch (e) {
+    res.status(503).send({
+      message: "Something went wrong while switching the session"
+    });
+  }
 });
 
 app.get('/session/roles', async function(req, res) {
-  const sessionUri = req.headers['mu-session-id'];
-  const accountUri = await accountForSessionUri(sessionUri);
-  const accountGraph = accountUri;
+  try {
+    const sessionUri = req.headers['mu-session-id'];
+    const accountUri = await accountForSessionUri(sessionUri);
+    const accountGraph = accountUri;
 
-  const queryResults = await query(`
+    const queryResults = await query(`
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
     PREFIX adres: <https://data.vlaanderen.be/ns/adres#>
@@ -107,23 +114,30 @@ app.get('/session/roles', async function(req, res) {
     } GROUP BY ?role
   `);
 
-  res
-    .status(200)
-    .send(JSON.stringify({
-      data: queryResults.results.bindings.map((bindings) => {
-        const type = bindings.roleType.value
-          === "http://mu.semte.ch/vocabularies/ext/ValidatorRole"
-          ? "validator-roles"
-          : "data-entry-roles";
-        return {
-          attributes: {
-            concatenatedPoiName: type === "data-entry-roles" ? bindings.poiNames.value : undefined
-          },
-          id: bindings.roleId.value,
-          type: type
-        };
-      })
-    }));
+    res
+      .status(200)
+      .send(JSON.stringify({
+        data: queryResults.results.bindings.map((bindings) => {
+          const type = bindings.roleType.value
+                === "http://mu.semte.ch/vocabularies/ext/ValidatorRole"
+                ? "validator-roles"
+                : "data-entry-roles";
+          return {
+            attributes: {
+              concatenatedPoiName: type === "data-entry-roles" ? bindings.poiNames.value : undefined
+            },
+            id: bindings.roleId.value,
+            type: type
+          };
+        })
+      }));
+  } catch (e) {
+    res
+      .status(500)
+      .send(JSON.stringify({
+        message: "something went wrong while listing roles"
+      }));
+  }
 });
 
 app.use(errorHandler);
